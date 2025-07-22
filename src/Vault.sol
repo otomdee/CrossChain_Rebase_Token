@@ -42,8 +42,10 @@ contract Vault {
     receive() external payable {}
 
     function deposit() external payable {
+        //get current global interest rate of token
+        uint256 interestRate = i_rebaseToken.getInterestRate();
         // Mint RBT tokens to the caller
-        i_rebaseToken.mint(msg.sender, msg.value);
+        i_rebaseToken.mint(msg.sender, msg.value, interestRate);
 
         emit Deposit(msg.sender, msg.value);
     }

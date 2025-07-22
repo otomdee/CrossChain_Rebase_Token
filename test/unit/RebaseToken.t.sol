@@ -126,6 +126,34 @@ contract RebaseTokenTest is Test {
         rebaseToken.mint(user1, USER_BALANCE);
     }
 
+    function testPrincipleBalanceOfReturnsExpectedAmount(uint256 amount) public {
+        amount = bound(amount, 1e5, type(uint96).max);
+
+        vm.deal(user1, amount);
+
+        vm.prank(user1);
+        vault.deposit{value: amount}();
+
+        assertEq(rebaseToken.principalBalanceOf(user1), amount);
+
+        vm.warp(block.timestamp + 1 hours);
+
+        assertEq(rebaseToken.principalBalanceOf(user1), amount);
+    }
+
+    function testGetInterestRate(uint256 rate) public {
+        uint256 startingInterestRate = 5e10;
+
+        rate = bound(rate, 1e5, startingInterestRate); //rate can only decrease
+
+        assertEq(rebaseToken.getCurrentInterestRate(), startingInterestRate);
+
+        vm.prank(owner);
+        rebaseToken.setInterestRate(rate);
+
+        assertEq(rebaseToken.getCurrentInterestRate(), rate);
+    }
+
     //helper
     function addRewardsToVault(uint256 rewardAmount) public {
         payable(address(vault)).call{value: rewardAmount}("");
