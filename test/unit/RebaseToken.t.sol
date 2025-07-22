@@ -123,7 +123,7 @@ contract RebaseTokenTest is Test {
     function testCannotCallMintAndBurnIfNotOwner() public {
         vm.expectRevert();
         vm.prank(user1);
-        rebaseToken.mint(user1, USER_BALANCE);
+        rebaseToken.mint(user1, USER_BALANCE, rebaseToken.getCurrentInterestRate());
     }
 
     function testPrincipleBalanceOfReturnsExpectedAmount(uint256 amount) public {

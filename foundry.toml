@@ -4,6 +4,9 @@ out = "out"
 libs = ["lib"]
 remappings = [
     "@openzeppelin/=lib/openzeppelin-contracts/",
-    '@ccip/=lib/ccip/'
+    '@ccip/=lib/ccip/',
+    "@chainlink-local/=lib/chainlink-local/"
 ]
+rpc_endpoints = { sepolia = "https://sepolia.infura.io/v3/381c8d964cd64afdabb947d9921d9e58", arb-sepolia = "https://arbitrum-sepolia.infura.io/v3/381c8d964cd64afdabb947d9921d9e58" }
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
