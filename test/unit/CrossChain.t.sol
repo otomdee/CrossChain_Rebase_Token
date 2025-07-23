@@ -10,6 +10,8 @@ import {RebaseTokenPool} from "../../src/RebaseTokenPool.sol";
 import {IERC20} from "@ccip/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/IERC20.sol";
 import {RegistryModuleOwnerCustom} from "@ccip/contracts/src/v0.8/ccip/TokenAdminRegistry/RegistryModuleOwnerCustom.sol";
 import {TokenAdminRegistry} from "@ccip/contracts/src/v0.8/ccip/TokenAdminRegistry/TokenAdminRegistry.sol";
+import {TokenPool} from "@ccip/contracts/src/v0.8/ccip/pools/TokenPool.sol";
+import {RateLimiter} from "@ccip/contracts/src/v0.8/ccip/libraries/RateLimiter.sol";
 
 import {CCIPLocalSimulatorFork, Register} from "@chainlink-local/src/ccip/CCIPLocalSimulatorFork.sol";
 
@@ -102,5 +104,40 @@ contract CrossChain is Test {
         );
 
         vm.stopPrank();
+    }
+
+    function configureTokenPool(
+        uint256 forkId, // The fork ID of the local chain
+        address localPoolAddress, // Address of the pool being configured
+        uint64 remoteChainSelector, // Chain selector of the remote chain
+        address remotePoolAddress, // Address of the pool on the remote chain
+        address remoteTokenAddress // Address of the token on the remote chain
+    ) public {
+        vm.selectFork(forkId); //select the chain we want to work from
+
+        TokenPool.ChainUpdate[] memory chainsToAdd = new TokenPool.ChainUpdate[](1); //we're adding 1 chain
+
+        bytes memory remotePoolAddressEncoded = abi.encode(remotePoolAddress);
+
+        // struct ChainUpdate {
+        //     uint64 remoteChainSelector;
+        //     bool allowed;
+        //     bytes remotePoolAddresses; // ABI-encoded array of remote pool addresses
+        //     bytes remoteTokenAddress;  // ABI-encoded remote token address
+        //     RateLimiter.Config outboundRateLimiterConfig;
+        //     RateLimiter.Config inboundRateLimiterConfig;
+        // }
+
+        chainsToAdd[0] = TokenPool.ChainUpdate({
+            remoteChainSelector: remoteChainSelector,
+            allowed: true,
+            remotePoolAddress: abi.encode(remotePoolAddressEncoded),
+            remoteTokenAddress: abi.encode(remoteTokenAddress),
+            outboundRateLimiterConfig: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0}), //we're not using rate limits
+            inboundRateLimiterConfig: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0})
+        });
+
+        vm.prank(owner);
+        TokenPool(localPoolAddress).applyChainUpdates(chainsToAdd);
     }
 }
