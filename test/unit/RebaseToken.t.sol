@@ -22,7 +22,11 @@ contract RebaseTokenTest is Test {
         // Grant mint and burn role to the vault
         rebaseToken.grantMintAndBurnRole(address(vault));
         vm.deal(owner, USER_BALANCE);
-        payable(address(vault)).call{value: USER_BALANCE}("");
+        (bool success,) = payable(address(vault)).call{value: USER_BALANCE}("");
+        if (!success) {
+            revert();
+        }
+
         vm.stopPrank();
     }
 
@@ -156,6 +160,9 @@ contract RebaseTokenTest is Test {
 
     //helper
     function addRewardsToVault(uint256 rewardAmount) public {
-        payable(address(vault)).call{value: rewardAmount}("");
+        (bool success,) = payable(address(vault)).call{value: rewardAmount}("");
+        if (!success) {
+            revert();
+        }
     }
 }
